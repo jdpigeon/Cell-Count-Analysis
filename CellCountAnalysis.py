@@ -41,69 +41,80 @@ def amygdala_loop(filename, NeuNCells, NeuNCount, timesbaseline):
                 columns=['Number', 'Area', 'Intensity', 'Density', 'Proportion', 'Cell Density'])
             ArcCount = pd.read_csv(filename % n, index_col=" ")
             ArcCells = ArcCount['Mean'][(ArcCount['Mean'] > (threshold(ArcCount)*timesbaseline))]
-            Slice['Cell Density'][0] = (len(NeuNCells.index) + 1) / (NeuNCount['Area'][1])
+            Slice['Cell Density'][0] = ((len(NeuNCells.index) + 1) / (NeuNCount['Area'][1] / 44696.932))*.8
             Slice['Area'][0] = ArcCount['Area'][1]
             Slice['Number'][0] = len(ArcCells.index) + 1
             Slice['Intensity'][0] = ArcCells.mean(axis=0) - threshold(ArcCount)
             # 44696.932 transforms to area/100um^2 based on .473um pixel size
             Slice['Density'][0] = Slice['Number'][0] / (Slice['Area'][0] / 44696.932)
-            Slice['Proportion'][0] = Slice['Density'][0] * Slice['Cell Density'][0]
+            Slice['Proportion'][0] = Slice['Density'][0] / Slice['Cell Density'][0]
             SliceList = SliceList.append(Slice)
             
     return SliceList
 
 def make_tables(CombinedMice, MiceLeft, MiceRight, AntLeft, CombinedAnt, CombinedPost):
+    hc = 4
+    low = 20
+    med = 18
+    high = 10
     
     AverageDensity = pd.DataFrame(        [
-            CombinedMice['Density'][0:4].tolist(),
-            CombinedMice['Density'][19:25].tolist(),
-            CombinedMice['Density'][10:19].tolist(),
-            CombinedMice['Density'][4:10].tolist()],
+            CombinedMice['Density'][0:hc].tolist(),
+            CombinedMice['Density'][low:].tolist(),
+            CombinedMice['Density'][high:med].tolist(),
+            CombinedMice['Density'][hc:high].tolist()],
             index=['HC', '.3 mA', '.5 mA', '.75 mA']).transpose()
             
     AverageArea = pd.DataFrame(        [
-            CombinedMice['Area'][0:4].tolist(),
-            CombinedMice['Area'][19:25].tolist(),
-            CombinedMice['Area'][10:19].tolist(),
-            CombinedMice['Area'][4:10].tolist()],
+            CombinedMice['Area'][0:hc].tolist(),
+            CombinedMice['Area'][low:].tolist(),
+            CombinedMice['Area'][high:med].tolist(),
+            CombinedMice['Area'][hc:high].tolist()],
             index=['HC', '.3 mA', '.5 mA', '.75 mA']).transpose()
             
     AverageProportion = pd.DataFrame(        [
-            CombinedMice['Proportion'][0:4].tolist(),
-            CombinedMice['Proportion'][19:25].tolist(),
-            CombinedMice['Proportion'][10:19].tolist(),
-            CombinedMice['Proportion'][4:10].tolist()],
+            CombinedMice['Proportion'][0:hc].tolist(),
+            CombinedMice['Proportion'][low:].tolist(),
+            CombinedMice['Proportion'][high:med].tolist(),
+            CombinedMice['Proportion'][hc:high].tolist()],
             index=['HC', '.3 mA', '.5 mA', '.75 mA']).transpose()
     
     LeftDensity = pd.DataFrame(        [
-            MiceLeft['Density'][0:4].tolist(),
-            MiceLeft['Density'][19:25].tolist(),
-            MiceLeft['Density'][10:19].tolist(),
-            MiceLeft['Density'][4:10].tolist()],
+            MiceLeft['Density'][0:hc].tolist(),
+            MiceLeft['Density'][low:].tolist(),
+            MiceLeft['Density'][high:med].tolist(),
+            MiceLeft['Density'][hc:high].tolist()],
+            index=['HC', '.3 mA', '.5 mA', '.75 mA']).transpose()
+            
+    CellDensity = pd.DataFrame(        [
+            CombinedMice['Cell Density'][0:hc].tolist(),
+            CombinedMice['Cell Density'][low:].tolist(),
+            CombinedMice['Cell Density'][high:med].tolist(),
+            CombinedMice['Cell Density'][hc:high].tolist()],
             index=['HC', '.3 mA', '.5 mA', '.75 mA']).transpose()
             
     RightDensity = pd.DataFrame(        [
-            MiceRight['Density'][0:4].tolist(),
-            MiceRight['Density'][19:25].tolist(),
-            MiceRight['Density'][10:19].tolist(),
-            MiceRight['Density'][4:10].tolist()],
+            MiceRight['Density'][0:hc].tolist(),
+            MiceRight['Density'][low:].tolist(),
+            MiceRight['Density'][high:med].tolist(),
+            MiceRight['Density'][hc:high].tolist()],
             index=['HC', '.3 mA', '.5 mA', '.75 mA']).transpose()
             
     AntDensity = pd.DataFrame(        [
-            CombinedAnt['Density'][0:4].tolist(),
-            CombinedAnt['Density'][19:25].tolist(),
-            CombinedAnt['Density'][10:19].tolist(),
-            CombinedAnt['Density'][4:10].tolist()],
+            CombinedAnt['Density'][0:hc].tolist(),
+            CombinedAnt['Density'][low:].tolist(),
+            CombinedAnt['Density'][high:med].tolist(),
+            CombinedAnt['Density'][hc:high].tolist()],
             index=['HC', '.3 mA', '.5 mA', '.75 mA']).transpose()
             
     PostDensity = pd.DataFrame(        [
-            CombinedPost['Density'][0:4].tolist(),
-            CombinedPost['Density'][19:25].tolist(),
-            CombinedPost['Density'][10:19].tolist(),
-            CombinedPost['Density'][4:10].tolist()],
+            CombinedPost['Density'][0:hc].tolist(),
+            CombinedPost['Density'][low:].tolist(),
+            CombinedPost['Density'][high:med].tolist(),
+            CombinedPost['Density'][hc:high].tolist()],
             index=['HC', '.3 mA', '.5 mA', '.75 mA']).transpose()
             
-    return  AverageDensity, AverageProportion, LeftDensity, RightDensity, AverageArea, AntDensity, PostDensity
+    return  AverageDensity, AverageProportion, LeftDensity, CellDensity, RightDensity, AverageArea, AntDensity, PostDensity
             
     
 def cell_count():
@@ -168,5 +179,5 @@ def cell_count():
 
 if __name__ == "__main__":
 
-    Density, Proportion, LeftDensity, RightDensity, Area, AntDensity, PostDensity = cell_count()
+    Density, Proportion, LeftDensity, CellDensity, RightDensity, Area, AntDensity, PostDensity = cell_count()
     
