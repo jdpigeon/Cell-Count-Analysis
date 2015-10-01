@@ -55,7 +55,7 @@ def amygdala_loop(filename, NeuNCells, NeuNCount, timesbaseline):
 def make_tables(CombinedMice, MiceLeft, MiceRight, AntLeft, CombinedAnt, CombinedPost):
     hc = 4
     low = 20
-    med = 18
+    med = 19
     high = 10
     
     AverageDensity = pd.DataFrame(        [
@@ -77,6 +77,13 @@ def make_tables(CombinedMice, MiceLeft, MiceRight, AntLeft, CombinedAnt, Combine
             CombinedMice['Proportion'][low:].tolist(),
             CombinedMice['Proportion'][high:med].tolist(),
             CombinedMice['Proportion'][hc:high].tolist()],
+            index=['HC', '.3 mA', '.5 mA', '.75 mA']).transpose()
+            
+    AverageIntensity = pd.DataFrame(        [
+            CombinedMice['Intensity'][0:hc].tolist(),
+            CombinedMice['Intensity'][low:].tolist(),
+            CombinedMice['Intensity'][high:med].tolist(),
+            CombinedMice['Intensity'][hc:high].tolist()],
             index=['HC', '.3 mA', '.5 mA', '.75 mA']).transpose()
     
     LeftDensity = pd.DataFrame(        [
@@ -114,7 +121,7 @@ def make_tables(CombinedMice, MiceLeft, MiceRight, AntLeft, CombinedAnt, Combine
             CombinedPost['Density'][hc:high].tolist()],
             index=['HC', '.3 mA', '.5 mA', '.75 mA']).transpose()
             
-    return  AverageDensity, AverageProportion, LeftDensity, CellDensity, RightDensity, AverageArea, AntDensity, PostDensity
+    return  AverageDensity, AverageProportion, AverageIntensity, LeftDensity, CellDensity, RightDensity, AverageArea, AntDensity, PostDensity
             
     
 def cell_count():
@@ -179,5 +186,5 @@ def cell_count():
 
 if __name__ == "__main__":
 
-    Density, Proportion, LeftDensity, CellDensity, RightDensity, Area, AntDensity, PostDensity = cell_count()
-    
+    Density, Proportion, Intensity, LeftDensity, CellDensity, RightDensity, Area, AntDensity, PostDensity = cell_count()
+    Area = Area /
