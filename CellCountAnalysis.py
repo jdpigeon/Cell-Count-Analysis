@@ -28,6 +28,25 @@ def threshold(filename):
     threshold = filename['Mean'][(len(filename.index) - 5):len(filename.index)].mean(axis=0)
     
     return threshold
+
+def neun_count(filename, timesbaseline):
+    SliceList = pd.DataFrame()
+    for n in np.arange(1, 8):
+            if not os.path.isfile(filename % n):
+                break
+            Slice = pd.DataFrame(np.random.randn(1,3),
+                columns=['Number', 'Area', 'Density'])
+            NeuNCount = pd.read_csv(filename % n, index_col=" ")
+            NeuNCells = NeuNCount['Mean'][(NeuNCount['Mean'] > (threshold(NeuNCount)*timesbaseline))]
+            Slice['Area'][0] = NeuNCount['Area'][1]
+            Slice['Number'][0] = len(NeuNCells.index) + 1
+            # 44696.932 transforms to area/100um^2 based on .473um pixel size
+            # 178034.139970446 transforms to area/100um based on .237um pixel size
+            Slice['Density'][0] = Slice['Number'][0] / (Slice['Area'][0] / 44696.932)
+            SliceList = SliceList.append(Slice)
+            
+    return SliceList
+    
     
 def amygdala_loop(filename, timesbaseline):
     '''
@@ -45,17 +64,114 @@ def amygdala_loop(filename, timesbaseline):
                 columns=['Number', 'Area', 'Intensity', 'Density', 'Proportion', 'Cell Density'])
             ArcCount = pd.read_csv(filename % n, index_col=" ")
             ArcCells = ArcCount['Mean'][(ArcCount['Mean'] > (threshold(ArcCount)*timesbaseline))]
-            Slice['Cell Density'][0] = 16 / 44696.932
+            Slice['Cell Density'][0] = 16
             Slice['Area'][0] = ArcCount['Area'][1]
             Slice['Number'][0] = len(ArcCells.index) + 1
             Slice['Intensity'][0] = ArcCells.mean(axis=0) - threshold(ArcCount)
             # 44696.932 transforms to area/100um^2 based on .473um pixel size
+            # 178034.139970446 transforms to area/100um based on .237um pixel size
             Slice['Density'][0] = Slice['Number'][0] / (Slice['Area'][0] / 44696.932)
             Slice['Proportion'][0] = Slice['Density'][0] / Slice['Cell Density'][0]
             SliceList = SliceList.append(Slice)
             
     return SliceList
+    """
+def make_tables(Groups, CombinedMice, MiceLeft, MiceRight, AntLeft, CombinedAnt, CombinedPost):
+    GroupList = list(Groups)
+    hc = [20,21,22,23,24,25,26,27]
+    low = [13,14,15,16,17,18,19]
+    med = [5,6,7,8,9,10,11,12]
+    high = [0,1,2,3,4]
+    
+    AverageDensity = pd.DataFrame(        [
+    
+            CombinedMice['Density'][hc].tolist(),
+            CombinedMice['Density'][low].tolist(),
+            CombinedMice['Density'][med].tolist(),
+            CombinedMice['Density'][high].tolist()],
+            index=GroupList).transpose()
+                    
+    
+    LeftDensity = pd.DataFrame(        [
+            MiceLeft['Density'][hc].tolist(),
+            MiceLeft['Density'][low].tolist(),
+            MiceLeft['Density'][med].tolist(),
+            MiceLeft['Density'][high].tolist()],
+            index=['hc','low','med','high']).transpose()
+            
+            
+    RightDensity = pd.DataFrame(        [
+            MiceRight['Density'][hc].tolist(),
+            MiceRight['Density'][low].tolist(),
+            MiceRight['Density'][med].tolist(),
+            MiceRight['Density'][high].tolist()],
+            index=['hc','low','med','high']).transpose()
+            
+    AntDensity = pd.DataFrame(        [
+            CombinedAnt['Density'][hc].tolist(),
+            CombinedAnt['Density'][low].tolist(),
+            CombinedAnt['Density'][med].tolist(),
+            CombinedAnt['Density'][high].tolist()],
+            index=['hc','low','med','high']).transpose()
+            
+    PostDensity = pd.DataFrame(        [
+            CombinedPost['Density'][hc].tolist(),
+            CombinedPost['Density'][low].tolist(),
+            CombinedPost['Density'][med].tolist(),
+            CombinedPost['Density'][high].tolist()],
+            index=['hc','low','med','high']).transpose()
+            
+    return  AverageDensity, LeftDensity, RightDensity, AntDensity, PostDensity    
+    """
+def make_tables(CombinedMice, MiceLeft, MiceRight, CombinedAnt, CombinedPost):
+    saline = [2, 5, 6, 7]
+    cno = [0, 1, 3, 4, 8] 
+    
+    AverageDensity = pd.DataFrame(        [
+            CombinedMice['Density'][saline].tolist(),
+            CombinedMice['Density'][cno].tolist()],
+            index=['saline','cno']).transpose()
+            
+    AverageArea = pd.DataFrame(        [
+            CombinedMice['Area'][saline].tolist(),
+            CombinedMice['Area'][cno].tolist()],
+            index=['saline','cno']).transpose()
+    
+    AverageProportion = pd.DataFrame(        [
+            CombinedMice['Proportion'][saline].tolist(),
+            CombinedMice['Proportion'][cno].tolist()],
+            index=['saline','cno']).transpose()
 
+    AverageIntensity = pd.DataFrame(        [
+            CombinedMice['Intensity'][saline].tolist(),
+            CombinedMice['Intensity'][cno].tolist()],
+            index=['saline','cno']).transpose()
+            
+    LeftDensity = pd.DataFrame(        [
+            MiceLeft['Density'][saline].tolist(),
+            MiceLeft['Density'][cno].tolist()],
+            index=['saline','cno']).transpose()
+            
+            
+    RightDensity = pd.DataFrame(        [
+            MiceRight['Density'][saline].tolist(),
+            MiceRight['Density'][cno].tolist()],
+            index=['saline','cno']).transpose()
+            
+    AntDensity = pd.DataFrame(        [
+            CombinedAnt['Density'][saline].tolist(),
+            CombinedAnt['Density'][cno].tolist()],
+            index=['saline','cno']).transpose()
+            
+    PostDensity = pd.DataFrame(        [
+            
+            CombinedPost['Density'][saline].tolist(),
+            CombinedPost['Density'][cno].tolist()],
+            index=['saline','cno']).transpose()
+            
+                
+    return  AverageDensity, AverageProportion, AverageIntensity, LeftDensity, RightDensity, AverageArea, AntDensity, PostDensity, CombinedMice
+    """
 def make_tables(CombinedMice, MiceLeft, MiceRight, AntLeft, CombinedAnt, CombinedPost):
     '''
     Constructs data tables for average Arc Cell Density, LA Area, Arc+ proportion,
@@ -66,7 +182,7 @@ def make_tables(CombinedMice, MiceLeft, MiceRight, AntLeft, CombinedAnt, Combine
     '''
     hc = 4
     low = 20
-    med = 19
+    med = 18
     high = 10
     
     AverageDensity = pd.DataFrame(        [
@@ -132,17 +248,17 @@ def make_tables(CombinedMice, MiceLeft, MiceRight, AntLeft, CombinedAnt, Combine
             CombinedPost['Density'][hc:high].tolist()],
             index=['HC', '.3 mA', '.5 mA', '.75 mA']).transpose()
             
-    return  AverageDensity, AverageProportion, AverageIntensity, LeftDensity, CellDensity, RightDensity, AverageArea, AntDensity, PostDensity
-            
+    return  AverageDensity, AverageProportion, AverageIntensity, LeftDensity, RightDensity, AverageArea, AntDensity, PostDensity
+         """
     
-def cell_count():
+def cell_count(region):
     '''
     Loops through all folders in 'To Analyze' folder, combining average Right &
     Left hemisphere data from all mice into one DataFrame
     '''
     
     # Instantiate all of the global Dataframes
-    timesbaseline = 1.5
+    timesbaseline = 1.2
     MiceLeft = pd.DataFrame()
     MiceRight = pd.DataFrame()
     AntLeft = pd.DataFrame()
@@ -150,6 +266,9 @@ def cell_count():
     AntRight = pd.DataFrame()
     PostRight = pd.DataFrame()
     os.chdir('To Analyze')
+    if region == 'LA':
+        region = ''
+    
     
     # Left
     i = 1
@@ -159,7 +278,7 @@ def cell_count():
         Amygdala = pd.DataFrame()
 
         # Loop through slices, building up Amygdala
-        Amygdala = amygdala_loop('%dlCount.csv', timesbaseline)
+        Amygdala = amygdala_loop('%dl' + region + 'Count.csv', timesbaseline)
         MiceLeft = MiceLeft.append(Amygdala.mean(axis=0), ignore_index=True)
         
         # Seperate anterior and posterior slices
@@ -178,7 +297,7 @@ def cell_count():
         Amygdala = pd.DataFrame()
 
         # Loop through slices
-        Amygdala = amygdala_loop('%drCount.csv', timesbaseline)
+        Amygdala = amygdala_loop('%dr' + region +'Count.csv', timesbaseline)
         MiceRight = MiceRight.append(Amygdala.mean(axis=0), ignore_index=True)
         
         # Seperate anterior and posterior slices
@@ -188,14 +307,18 @@ def cell_count():
         os.chdir(os.pardir)
         i = i + 1
 
-    CombinedMice = (MiceRight + MiceLeft) / 2
-    CombinedAnt = (AntRight + AntLeft) / 2
-    CombinedPost = (PostRight + PostLeft) / 2
+
+    
+    CombinedMice = pd.concat([MiceLeft, MiceRight]).groupby(level=0).mean()
+    CombinedAnt = pd.concat([AntLeft, AntRight]).groupby(level=0).mean()
+    CombinedPost= pd.concat([PostLeft, PostRight]).groupby(level=0).mean()
+    
 
     # Make data tables that can be copied into GraphPad
-    return make_tables(CombinedMice, MiceLeft, MiceRight, AntLeft, CombinedAnt, CombinedPost)    
+    
+    return make_tables(CombinedMice, MiceLeft, MiceRight, CombinedAnt, CombinedPost) 
 
 if __name__ == "__main__":
 
-    Density, Proportion, Intensity, LeftDensity, CellDensity, RightDensity, Area, AntDensity, PostDensity = cell_count()
+    Density, Proportion, Intensity, LeftDensity, RightDensity, Area, AntDensity, PostDensity, CombinedMice = cell_count('BA')
     
