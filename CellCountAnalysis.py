@@ -172,10 +172,10 @@ def cell_count(folder, region, timesbaseline):
     
     
     # Left
-    i = 1
+    
     # Loop through folders, building MiceLeft, AntLeft, and Post,Left
-    while (i <= len(os.listdir())):
-        os.chdir('%d' % i)
+    for i in os.listdir():
+        os.chdir(i)
         Amygdala = pd.DataFrame()
 
         # Loop through slices, building up Amygdala
@@ -188,13 +188,13 @@ def cell_count(folder, region, timesbaseline):
         PostLeft = PostLeft.append(
             Amygdala[(int(len(Amygdala.index) / 2)):len(Amygdala.index)].mean(axis=0), ignore_index=True)
         os.chdir(os.pardir)
-        i = i + 1
+
 
     # Right
-    i = 1
+    
     # Loop through folders, building up MiceRight, AntRight, and PostRight
-    while (i <= len(os.listdir())):
-        os.chdir('%d' % i)
+    for i in os.listdir():
+        os.chdir(i)
         Amygdala = pd.DataFrame()
 
         # Loop through slices
@@ -206,7 +206,7 @@ def cell_count(folder, region, timesbaseline):
             Amygdala[0:(int(len(Amygdala.index) / 2))].mean(axis=0), ignore_index=True)
         PostRight = PostRight.append(Amygdala[(int(len(Amygdala.index) / 2)):len(Amygdala.index)].mean(axis=0), ignore_index=True)
         os.chdir(os.pardir)
-        i = i + 1
+        
 
 
     
