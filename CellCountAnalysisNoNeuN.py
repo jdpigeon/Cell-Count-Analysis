@@ -37,19 +37,22 @@ def amygdala_loop(filename, timesbaseline):
     for n in np.arange(1, 8):
             if not os.path.isfile(filename % n):
                 break
-            Slice = pd.DataFrame(np.random.randn(1,4),
-                columns=['Number', 'Area', 'Intensity', 'Density'])
+            Slice = pd.DataFrame(np.random.randn(1,6),
+                columns=['Number', 'Area', 'Intensity', 'Density', 'Proportion', 'Cell Density'])
             ArcCount = pd.read_csv(filename % n, index_col=" ")
             ArcCells = ArcCount['Mean'][(ArcCount['Mean'] > (threshold(ArcCount)*timesbaseline))]
+            Slice['Cell Density'][0] = 16
             Slice['Area'][0] = ArcCount['Area'][1]
             Slice['Number'][0] = len(ArcCells.index) + 1
             Slice['Intensity'][0] = ArcCells.mean(axis=0) - threshold(ArcCount)
             # 44696.932 transforms to area/100um^2 based on .473um pixel size
+            # 178034.139970446 transforms to area/100um based on .237um pixel size
             Slice['Density'][0] = Slice['Number'][0] / (Slice['Area'][0] / 44696.932)
+            Slice['Proportion'][0] = Slice['Density'][0] / Slice['Cell Density'][0]
             SliceList = SliceList.append(Slice)
             
     return SliceList
-    
+    """
 def make_tables(Groups, CombinedMice, MiceLeft, MiceRight, AntLeft, CombinedAnt, CombinedPost):
     GroupList = list(Groups)
     hc = [20,21,22,23,24,25,26,27]
@@ -132,11 +135,11 @@ def make_tables(CombinedMice, MiceLeft, MiceRight, AntLeft, CombinedAnt, Combine
             
     return  AverageDensity, LeftDensity, RightDensity, AntDensity, PostDensity
           
-    """
+    
 def cell_count():
     
         # Instantiate all of the global Dataframes
-    timesbaseline = 1.5
+    timesbaseline = 1.25
     MiceLeft = pd.DataFrame()
     MiceRight = pd.DataFrame()
     AntLeft = pd.DataFrame()
