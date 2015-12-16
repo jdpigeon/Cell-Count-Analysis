@@ -30,25 +30,6 @@ def threshold(filename):
     threshold = filename['Mean'][(len(filename.index) - 5):len(filename.index)].mean(axis=0)
     
     return threshold
-
-def neun_count(filename, timesbaseline):
-    SliceList = pd.DataFrame()
-    for n in np.arange(1, 8):
-            if not os.path.isfile(filename % n):
-                break
-            Slice = pd.DataFrame(np.random.randn(1,3),
-                columns=['Number', 'Area', 'Density'])
-            NeuNCount = pd.read_csv(filename % n, index_col=" ")
-            NeuNCells = NeuNCount['Mean'][(NeuNCount['Mean'] > (threshold(NeuNCount)*timesbaseline))]
-            Slice['Area'][0] = NeuNCount['Area'][1]
-            Slice['Number'][0] = len(NeuNCells.index) + 1
-            # 44696.932 transforms to area/100um^2 based on .473um pixel size
-            # 178034.139970446 transforms to area/100um based on .237um pixel size
-            Slice['Density'][0] = Slice['Number'][0] / (Slice['Area'][0] / 44696.932)
-            SliceList = SliceList.append(Slice)
-            
-    return SliceList
-    
     
 def amygdala_loop(filename, timesbaseline, AllCells):
     '''
