@@ -231,6 +231,6 @@ if __name__ == "__main__":
     # LA Threshold = 1.5
     #BA Threshold = 1.2
     #PV Threshold = 1.15
-    AverageDensity, AverageArea, AverageProportion, AverageIntensity, LeftDensity, RightDensity, AntDensity, PostDensity, CombinedMice = cell_count('PV','LA', 1.15)
+    AverageDensity, AverageArea, AverageProportion, AverageIntensity, LeftDensity, RightDensity, AntDensity, PostDensity, CombinedMice = cell_count('LA','LA', 1.5)
     
     
