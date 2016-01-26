@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Dec 10 12:52:11 2015
+
 Stereology Analysis:
 Reads through a series of csvs containing exported StereoInvestigator cell
-count data and produces a DataFrame containing information on ratios between
-cell tyoes
-Naming convention: 
-function = snake_case
-variable = CamelCase
+count data and produces a set of DataFrames containing information on ratios between available
+cell types (Arc/NeuN, Arc/DAPI, NeuN/DAPI)
 """
 
 import pandas as pd
@@ -17,11 +15,10 @@ import os
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
 
-pd.set_option('display.precision', 5)
 
 def get_frame(filename, region):
     '''
-    Creates a list of dataframes containing all counting data for particular region
+    Creates a list of dataframes containing all counting data for desired region
     '''
     os.chdir(filename)
     framelist = []
@@ -38,36 +35,56 @@ def create_ratioframe(framelist):
     '''
     loops through framelist, creating a dataframe with ratio data for each mouse
     '''
-    ratioframe = pd.DataFrame(np.zeros((0,5)),columns = ['Arc/Neun','Arc/DAPI','NeuN/DAPI','Estimated Population using Mean Section Thickness','Coefficient of Error (Gundersen), m=1'])
-    ratios = pd.DataFrame(np.zeros((1,5)),columns = ['Arc/Neun','Arc/DAPI','NeuN/DAPI','Estimated Population using Mean Section Thickness','Coefficient of Error (Gundersen), m=1'])
+    ratioframe = pd.DataFrame(np.zeros((0,5)),columns = ['Arc/Neun','Arc/DAPI','NeuN/DAPI',
+    'Estimated Population using Mean Section Thickness','Coefficient of Error (Gundersen), m=1'])
+    ratios = pd.DataFrame(np.zeros((1,5)),columns = ['Arc/Neun','Arc/DAPI','NeuN/DAPI',
+    'Estimated Population using Mean Section Thickness','Coefficient of Error (Gundersen), m=1'])
     indexframe = pd.DataFrame(np.zeros((0,1)),columns = ['Number'])
     index = pd.DataFrame(np.zeros((1,1)),columns = ['Number'])
+    
     for i in framelist:
         if 'colabel' in i.index.values.tolist():
             arcneun = (i['Total Markers Counted']['brdu'] / (i['Total Markers Counted']['colabel']))*100
             arcdapi = np.nan
+            ce = np.nan
             neundapi = np.nan
             estpop = i['Estimated Population using Mean Section Thickness']['brdu']
             ce = i['Coefficient of Error (Gundersen), m=1']['brdu']
             if 'cfos' in i.index.values.tolist():
                 arcdapi = (i['Total Markers Counted']['brdu'] / i['Total Markers Counted']['cfos'])*100
                 neundapi = (i['Total Markers Counted']['colabel'] / i['Total Markers Counted']['cfos'])*100
+        elif 'cfos' in i.index.values.tolist():
+            arcdapi = (i['Total Markers Counted']['brdu'] / (i['Total Markers Counted']['cfos']))*100
+            estpop = i['Estimated Population using Mean Section Thickness']['brdu']
+            arcneun = np.nan
+            neundapi = np.nan
+            ce = i['Coefficient of Error (Gundersen), m=1']['brdu']
                 
         ratios.iloc[0] = [arcneun,arcdapi,neundapi,estpop, ce]
         ratioframe = ratioframe.append(ratios)
+        
+        #Stores blinded index number of each mouse by removing the final 4chars (ie. '.DAT') from filename
         data_file = i['Data File']['brdu']
         index.iloc[0] = [int(data_file[0:(len(data_file)-4)])]
         indexframe = indexframe.append(index)
     
     return ratioframe, indexframe
-  
-def make_tables(ratioframe, indexframe):
+
+def assign_groups(key, ratioframe, indexframe):
     '''
+    Assigns real mouse names and groups to ratioframe based on key
     '''
-    Key = pd.read_csv('Stereology Key.csv',index_col='Number')
+    Key = pd.read_csv(key,index_col='Number')
     ratioframe.index=indexframe['Number']
     ratioframe['Name'] = Key['Name']
     ratioframe['Group'] = Key['Group']
+
+    return ratioframe
+    
+def make_tables(ratioframe):
+    '''
+    Constructs DataFrame tables of ratio data based on group ID
+    '''
     
     ArcNeunRatio = ratioframe.pivot('Name','Group', values='Arc/Neun').sort_index(axis=1,
         ascending=False)
@@ -77,11 +94,14 @@ def make_tables(ratioframe, indexframe):
         
     EstPop = ratioframe.pivot('Name','Group', values='Estimated Population using Mean Section Thickness').sort_index(axis=1,
         ascending=False)
+        
+    ArcDapi = ratioframe.pivot('Name','Group', values='Arc/DAPI').sort_index(axis=1,
+        ascending=False)
     
-    
-    return ArcNeunRatio, NeunDAPIRatio, EstPop
+    return ArcNeunRatio, NeunDAPIRatio, EstPop, ArcDapi
 
 if __name__ == "__main__":
-    framelist = get_frame('Memory Strength Counting Data','LA')
+    framelist = get_frame('PV Engram Counting Data','LA')
     ratioframe, indexframe = create_ratioframe(framelist)
-    ArcNeunRatio, NeunDAPIRatio, EstPop = make_tables(ratioframe, indexframe)
+    ratioframe = assign_groups('PV Stereology Key.csv', ratioframe, indexframe)
+    ArcNeunRatio, NeunDAPIRatio, EstPop, ArcDapi = make_tables(ratioframe)
